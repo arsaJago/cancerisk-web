@@ -75,7 +75,7 @@ function TestContent() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const finalAnswers = { ...answers, [test.questions[currentQuestion].id]: selectedAnswer };
     const totalScore = calculateTotalScore(finalAnswers, test.questions);
     const maxScore = calculateMaxScore(test.questions);
@@ -92,7 +92,7 @@ function TestContent() {
       userId: user?.username || 'unknown',
     };
 
-    saveTestResponse(response);
+    await saveTestResponse(response);
     
     // Redirect to result page
     router.push(`/result?testId=${test.id}&score=${totalScore}&maxScore=${maxScore}`);

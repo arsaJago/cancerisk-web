@@ -2,12 +2,14 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { getQuizByTestId, getTestById } from '@/lib/data';
 import { saveQuizResponse } from '@/lib/utils';
 
 function QuizContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const testId = searchParams?.get('testId') || 'breast-cancer';
   
   const test = getTestById(testId);
@@ -54,7 +56,7 @@ function QuizContent() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const correctCount = Object.entries(answers).filter(
       ([questionId, answer]) => {
         const question = quiz.questions.find((q) => q.id === parseInt(questionId));
@@ -68,9 +70,10 @@ function QuizContent() {
       score: correctCount,
       totalQuestions: quiz.questions.length,
       completedAt: new Date().toISOString(),
+      userId: user?.username || 'unknown',
     };
 
-    saveQuizResponse(quizResponse);
+    await saveQuizResponse(quizResponse);
     
     // Redirect to quiz result page
     router.push(`/quiz-result?quizId=${quiz.id}&score=${correctCount}&total=${quiz.questions.length}`);

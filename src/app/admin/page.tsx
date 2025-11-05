@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { TestResponse, QuizResponse } from '@/types';
+import { getTestResponses, getQuizResponses, deleteTestResponse, deleteQuizResponse } from '@/lib/utils';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -20,29 +21,59 @@ export default function AdminPage() {
     }
     
     loadData();
-    setIsLoading(false);
   }, [isAuthenticated, isAdmin, router]);
 
-  const loadData = () => {
-    const tests = JSON.parse(localStorage.getItem('testResponses') || '[]');
-    const quizzes = JSON.parse(localStorage.getItem('quizResults') || '[]');
-    setTestResponses(tests);
-    setQuizResponses(quizzes);
-  };
-
-  const handleDeleteTestResponse = (index: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus hasil tes ini?')) {
-      const updatedResponses = testResponses.filter((_, i) => i !== index);
-      localStorage.setItem('testResponses', JSON.stringify(updatedResponses));
-      setTestResponses(updatedResponses);
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const tests = await getTestResponses();
+      const quizzes = await getQuizResponses();
+      setTestResponses(tests);
+      setQuizResponses(quizzes);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteQuizResult = (index: number) => {
+  const handleDeleteTestResponse = async (response: TestResponse, index: number) => {
+    if (confirm('Apakah Anda yakin ingin menghapus hasil tes ini?')) {
+      try {
+        if (response.id) {
+          // Delete from Firestore
+          await deleteTestResponse(response.id);
+        } else {
+          // Fallback: delete from localStorage
+          const updatedResponses = testResponses.filter((_, i) => i !== index);
+          localStorage.setItem('testResponses', JSON.stringify(updatedResponses));
+        }
+        // Reload data
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting test response:', error);
+        alert('Gagal menghapus data. Silakan coba lagi.');
+      }
+    }
+  };
+
+  const handleDeleteQuizResult = async (response: QuizResponse, index: number) => {
     if (confirm('Apakah Anda yakin ingin menghapus hasil kuis ini?')) {
-      const updatedResponses = quizResponses.filter((_, i) => i !== index);
-      localStorage.setItem('quizResults', JSON.stringify(updatedResponses));
-      setQuizResponses(updatedResponses);
+      try {
+        if (response.id) {
+          // Delete from Firestore
+          await deleteQuizResponse(response.id);
+        } else {
+          // Fallback: delete from localStorage
+          const updatedResponses = quizResponses.filter((_, i) => i !== index);
+          localStorage.setItem('quizResults', JSON.stringify(updatedResponses));
+        }
+        // Reload data
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting quiz response:', error);
+        alert('Gagal menghapus data. Silakan coba lagi.');
+      }
     }
   };
 
@@ -305,7 +336,7 @@ export default function AdminPage() {
                         </td>
                         <td className="py-3 px-4 text-center">
                           <button
-                            onClick={() => handleDeleteTestResponse(index)}
+                            onClick={() => handleDeleteTestResponse(response, index)}
                             className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600 transition"
                           >
                             🗑️ Delete
@@ -370,7 +401,7 @@ export default function AdminPage() {
                         </td>
                         <td className="py-3 px-4 text-center">
                           <button
-                            onClick={() => handleDeleteQuizResult(index)}
+                            onClick={() => handleDeleteQuizResult(response, index)}
                             className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600 transition"
                           >
                             🗑️ Delete

@@ -35,6 +35,7 @@ export interface TestResponse {
   riskLevel: 'low' | 'medium' | 'high';
   completedAt: string;
   userId?: string;
+  id?: string; // Firestore document ID
 }
 
 export interface QuizQuestion {
@@ -59,6 +60,7 @@ export interface QuizResponse {
   totalQuestions: number;
   completedAt: string;
   userId?: string;
+  id?: string; // Firestore document ID
 }
 
 export interface User {
