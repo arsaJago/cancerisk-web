@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #14B8A6;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0D9488;
+}
+
+/* Button animations */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Progress bar animation */
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+}
+
+.progress-bar {
+  animation: progress 0.8s ease-out;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Quiz feedback colors */
+.correct-answer {
+  background-color: #D1FAE5;
+  border-left: 4px solid #10B981;
+}
+
+.incorrect-answer {
+  background-color: #FEE2E2;
+  border-left: 4px solid #EF4444;
+}
+
+/* Risk level colors */
+.risk-low {
+  color: #10B981;
+  background-color: #D1FAE5;
+}
+
+.risk-medium {
+  color: #F59E0B;
+  background-color: #FEF3C7;
+}
+
+.risk-high {
+  color: #EF4444;
+  background-color: #FEE2E2;
+}
