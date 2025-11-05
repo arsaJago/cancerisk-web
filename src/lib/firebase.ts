@@ -1,6 +1,7 @@
 // Firebase Configuration and Initialization
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, signInAnonymously, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -24,6 +25,7 @@ const isFirebaseConfigured = () => {
 // Initialize Firebase
 let app;
 let db: Firestore | null = null;
+let auth: Auth | null = null;
 
 if (typeof window !== 'undefined' && isFirebaseConfigured()) {
   try {
@@ -33,7 +35,16 @@ if (typeof window !== 'undefined' && isFirebaseConfigured()) {
       app = getApp();
     }
     db = getFirestore(app);
-    console.log('✅ Firebase initialized successfully');
+    auth = getAuth(app);
+    
+    // Auto sign-in anonymously for Firestore rules
+    signInAnonymously(auth)
+      .then(() => {
+        console.log('✅ Firebase initialized successfully with anonymous auth');
+      })
+      .catch((error) => {
+        console.warn('⚠️ Anonymous auth failed:', error);
+      });
   } catch (error) {
     console.error('❌ Firebase initialization error:', error);
   }
@@ -41,5 +52,5 @@ if (typeof window !== 'undefined' && isFirebaseConfigured()) {
   console.warn('⚠️ Firebase config not found. Using localStorage fallback.');
 }
 
-export { db };
+export { db, auth };
 export const isFirebaseEnabled = () => db !== null;
