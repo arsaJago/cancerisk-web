@@ -140,6 +140,288 @@ export const breastCancerTest: RiskTest = {
   ],
 };
 
+// Data Tes Risiko Kanker Serviks
+export const cervicalCancerTest: RiskTest = {
+  id: 'cervical-cancer',
+  name: 'Kanker Serviks',
+  description: 'Tes risiko kanker serviks untuk wanita',
+  icon: '🎗️',
+  questions: [
+    {
+      id: 1,
+      question: 'Berapa usia Anda saat ini?',
+      type: 'multiple-choice',
+      options: ['< 25 tahun', '25-35 tahun', '35-50 tahun', '> 50 tahun'],
+      points: {
+        '< 25 tahun': 0,
+        '25-35 tahun': 1,
+        '35-50 tahun': 2,
+        '> 50 tahun': 2,
+      },
+    },
+    {
+      id: 2,
+      question: 'Apakah Anda pernah terinfeksi HPV (Human Papillomavirus)?',
+      type: 'multiple-choice',
+      options: ['Ya, terbukti', 'Tidak tahu', 'Tidak'],
+      points: {
+        'Ya, terbukti': 4,
+        'Tidak tahu': 1,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 3,
+      question: 'Apakah Anda sudah mendapatkan vaksin HPV?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 0,
+        'Tidak': 2,
+      },
+    },
+    {
+      id: 4,
+      question: 'Apakah Anda merokok atau terpapar asap rokok secara rutin?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 5,
+      question: 'Apakah Anda memiliki riwayat infeksi menular seksual (IMS)?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 6,
+      question: 'Apakah Anda memiliki sistem kekebalan tubuh yang lemah (HIV/AIDS)?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 3,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 7,
+      question: 'Apakah Anda pernah melakukan tes Pap smear atau IVA?',
+      type: 'multiple-choice',
+      options: ['Ya, rutin', 'Jarang', 'Tidak pernah'],
+      points: {
+        'Ya, rutin': 0,
+        'Jarang': 1,
+        'Tidak pernah': 3,
+      },
+    },
+    {
+      id: 8,
+      question: 'Apakah Anda menggunakan KB hormonal dalam jangka panjang (> 5 tahun)?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 1,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 9,
+      question: 'Apakah ada riwayat keluarga dengan kanker serviks?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 10,
+      question: 'Apakah Anda mengalami gejala seperti pendarahan abnormal atau keputihan berbau?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+  ],
+  riskCategories: [
+    {
+      min: 0,
+      max: 5,
+      level: 'low',
+      label: 'Risiko Rendah',
+      description: 'Berdasarkan jawaban Anda, saat ini Anda memiliki risiko rendah terhadap kanker serviks. Tetap jaga kesehatan reproduksi, lakukan skrining Pap smear atau IVA secara rutin, dan pertimbangkan vaksin HPV jika belum.',
+      color: '#10B981',
+    },
+    {
+      min: 6,
+      max: 12,
+      level: 'medium',
+      label: 'Risiko Sedang',
+      description: 'Anda memiliki beberapa faktor risiko kanker serviks. Disarankan untuk segera melakukan skrining Pap smear atau IVA, berkonsultasi dengan dokter, dan melakukan pemeriksaan rutin.',
+      color: '#F59E0B',
+    },
+    {
+      min: 13,
+      max: 21,
+      level: 'high',
+      label: 'Risiko Tinggi',
+      description: 'Berdasarkan jawaban Anda, Anda memiliki risiko tinggi terhadap kanker serviks. Sangat disarankan untuk segera berkonsultasi dengan dokter spesialis untuk pemeriksaan lebih lanjut dan perencanaan pencegahan yang tepat.',
+      color: '#EF4444',
+    },
+  ],
+};
+
+// Data Tes Risiko Kanker Paru-paru
+export const lungCancerTest: RiskTest = {
+  id: 'lung-cancer',
+  name: 'Kanker Paru-paru',
+  description: 'Tes risiko kanker paru-paru untuk pria dan wanita',
+  icon: '🫁',
+  questions: [
+    {
+      id: 1,
+      question: 'Berapa usia Anda saat ini?',
+      type: 'multiple-choice',
+      options: ['< 40 tahun', '40-55 tahun', '55-65 tahun', '> 65 tahun'],
+      points: {
+        '< 40 tahun': 0,
+        '40-55 tahun': 1,
+        '55-65 tahun': 2,
+        '> 65 tahun': 3,
+      },
+    },
+    {
+      id: 2,
+      question: 'Apakah Anda merokok atau pernah merokok?',
+      type: 'multiple-choice',
+      options: ['Tidak pernah', 'Mantan perokok', 'Perokok aktif (< 1 pak/hari)', 'Perokok aktif (≥ 1 pak/hari)'],
+      points: {
+        'Tidak pernah': 0,
+        'Mantan perokok': 2,
+        'Perokok aktif (< 1 pak/hari)': 4,
+        'Perokok aktif (≥ 1 pak/hari)': 5,
+      },
+    },
+    {
+      id: 3,
+      question: 'Berapa lama Anda telah/pernah merokok?',
+      type: 'multiple-choice',
+      options: ['Tidak pernah', '< 10 tahun', '10-20 tahun', '> 20 tahun'],
+      points: {
+        'Tidak pernah': 0,
+        '< 10 tahun': 1,
+        '10-20 tahun': 3,
+        '> 20 tahun': 4,
+      },
+    },
+    {
+      id: 4,
+      question: 'Apakah Anda terpapar asap rokok (perokok pasif) secara rutin?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 5,
+      question: 'Apakah Anda terpapar zat karsinogen di tempat kerja (asbes, radon, dll)?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 3,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 6,
+      question: 'Apakah ada riwayat keluarga dengan kanker paru-paru?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 7,
+      question: 'Apakah Anda tinggal di area dengan polusi udara tinggi?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 1,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 8,
+      question: 'Apakah Anda pernah didiagnosis dengan penyakit paru-paru kronis (PPOK, fibrosis)?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 9,
+      question: 'Apakah Anda mengalami batuk kronis atau batuk berdarah?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 3,
+        'Tidak': 0,
+      },
+    },
+    {
+      id: 10,
+      question: 'Apakah Anda mengalami sesak napas atau nyeri dada yang tidak biasa?',
+      type: 'yes-no',
+      options: ['Ya', 'Tidak'],
+      points: {
+        'Ya': 2,
+        'Tidak': 0,
+      },
+    },
+  ],
+  riskCategories: [
+    {
+      min: 0,
+      max: 7,
+      level: 'low',
+      label: 'Risiko Rendah',
+      description: 'Berdasarkan jawaban Anda, saat ini Anda memiliki risiko rendah terhadap kanker paru-paru. Tetap jaga kesehatan paru dengan menghindari rokok, polusi, dan lakukan aktivitas fisik secara rutin.',
+      color: '#10B981',
+    },
+    {
+      min: 8,
+      max: 15,
+      level: 'medium',
+      label: 'Risiko Sedang',
+      description: 'Anda memiliki beberapa faktor risiko kanker paru-paru. Disarankan untuk berkonsultasi dengan dokter, berhenti merokok jika masih aktif, dan melakukan pemeriksaan paru secara berkala.',
+      color: '#F59E0B',
+    },
+    {
+      min: 16,
+      max: 27,
+      level: 'high',
+      label: 'Risiko Tinggi',
+      description: 'Berdasarkan jawaban Anda, Anda memiliki risiko tinggi terhadap kanker paru-paru. Sangat disarankan untuk segera berkonsultasi dengan dokter spesialis untuk pemeriksaan lebih lanjut seperti CT scan dada dan perencanaan pencegahan yang tepat.',
+      color: '#EF4444',
+    },
+  ],
+};
+
 // Kuis Pemahaman Kanker Payudara
 export const breastCancerQuiz: Quiz = {
   id: 'breast-cancer-quiz',
@@ -297,7 +579,7 @@ export const breastCancerEducation: EducationalContent[] = [
 ];
 
 // Daftar semua tes yang tersedia
-export const availableTests: RiskTest[] = [breastCancerTest];
+export const availableTests: RiskTest[] = [breastCancerTest, cervicalCancerTest, lungCancerTest];
 
 // Fungsi helper untuk mendapatkan tes berdasarkan ID
 export const getTestById = (testId: string): RiskTest | undefined => {

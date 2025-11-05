@@ -68,7 +68,7 @@ export default function Home() {
             Pilih jenis kanker yang ingin Anda ketahui risikonya
           </p>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {availableTests.map((test) => (
               <Link
                 key={test.id}
@@ -79,31 +79,12 @@ export default function Home() {
                   <div className="text-6xl mb-4">{test.icon}</div>
                   <h3 className="text-xl font-semibold mb-2">{test.name}</h3>
                   <p className="text-gray-600 text-sm mb-4">{test.description}</p>
-                  <button className="bg-primary text-white px-6 py-2 rounded-lg font-semibold w-full">
+                  <button className="bg-primary text-white px-6 py-2 rounded-lg font-semibold w-full hover:bg-opacity-90 transition">
                     {isAuthenticated() ? 'Mulai Tes' : 'Login untuk Mulai'}
                   </button>
                 </div>
               </Link>
             ))}
-            
-            {/* Placeholder for more tests */}
-            <div className="bg-white p-6 rounded-lg shadow-md text-center opacity-50 cursor-not-allowed">
-              <div className="text-6xl mb-4">🫁</div>
-              <h3 className="text-xl font-semibold mb-2">Kanker Paru-paru</h3>
-              <p className="text-gray-600 text-sm mb-4">Segera hadir</p>
-              <button className="bg-gray-300 text-gray-500 px-6 py-2 rounded-lg font-semibold w-full" disabled>
-                Coming Soon
-              </button>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md text-center opacity-50 cursor-not-allowed">
-              <div className="text-6xl mb-4">🩺</div>
-              <h3 className="text-xl font-semibold mb-2">Kanker Serviks</h3>
-              <p className="text-gray-600 text-sm mb-4">Segera hadir</p>
-              <button className="bg-gray-300 text-gray-500 px-6 py-2 rounded-lg font-semibold w-full" disabled>
-                Coming Soon
-              </button>
-            </div>
           </div>
         </div>
       </section>

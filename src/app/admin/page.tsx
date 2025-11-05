@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTestResponses, getQuizResponses, formatDate, clearAllData } from '@/lib/utils';
-import { TestResponse, QuizResponse, AdminStats } from '@/types';
+import { TestResponse, QuizResponse } from '@/types';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -16,7 +14,6 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is authenticated and is admin
     if (!isAuthenticated() || !isAdmin()) {
       router.push('/login');
       return;
@@ -27,52 +24,83 @@ export default function AdminPage() {
   }, [isAuthenticated, isAdmin, router]);
 
   const loadData = () => {
-    setTestResponses(getTestResponses());
-    setQuizResponses(getQuizResponses());
+    const tests = JSON.parse(localStorage.getItem('testResponses') || '[]');
+    const quizzes = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    setTestResponses(tests);
+    setQuizResponses(quizzes);
   };
 
-  const handleClearData = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus semua data? Tindakan ini tidak dapat dibatalkan.')) {
-      clearAllData();
-      loadData();
+  const handleDeleteTestResponse = (index: number) => {
+    if (confirm('Apakah Anda yakin ingin menghapus hasil tes ini?')) {
+      const updatedResponses = testResponses.filter((_, i) => i !== index);
+      localStorage.setItem('testResponses', JSON.stringify(updatedResponses));
+      setTestResponses(updatedResponses);
     }
   };
 
-  // Show loading or redirect
-  if (isLoading || !isAuthenticated() || !isAdmin()) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleDeleteQuizResult = (index: number) => {
+    if (confirm('Apakah Anda yakin ingin menghapus hasil kuis ini?')) {
+      const updatedResponses = quizResponses.filter((_, i) => i !== index);
+      localStorage.setItem('quizResults', JSON.stringify(updatedResponses));
+      setQuizResponses(updatedResponses);
+    }
+  };
 
-  // Calculate statistics
-  const stats: AdminStats = {
-    totalResponses: testResponses.length,
-    testBreakdown: testResponses.reduce((acc, response) => {
-      acc[response.testId] = (acc[response.testId] || 0) + 1;
-      return acc;
-    }, {} as { [key: string]: number }),
-    riskLevelDistribution: {
-      low: testResponses.filter((r) => r.riskLevel === 'low').length,
-      medium: testResponses.filter((r) => r.riskLevel === 'medium').length,
-      high: testResponses.filter((r) => r.riskLevel === 'high').length,
-    },
-    recentResponses: testResponses.slice(-10).reverse(),
+  const exportToCSV = (type: 'test' | 'quiz') => {
+    let csvContent = '';
+    let filename = '';
+
+    if (type === 'test') {
+      csvContent = 'Username,Test Name,Risk Level,Score,Completed At\n';
+      testResponses.forEach((response) => {
+        const username = response.userId || 'N/A';
+        const testName = response.testName || 'N/A';
+        const riskLevel = getRiskLabel(response.riskLevel);
+        const score = `${response.totalScore}/${response.maxScore}`;
+        const completedAt = formatDate(response.completedAt);
+        csvContent += `${username},${testName},${riskLevel},${score},${completedAt}\n`;
+      });
+      filename = 'test-responses.csv';
+    } else {
+      csvContent = 'Username,Quiz ID,Score,Completed At\n';
+      quizResponses.forEach((response) => {
+        const username = response.userId || 'N/A';
+        const quizId = response.quizId || 'N/A';
+        const score = `${response.score}/${response.totalQuestions}`;
+        const completedAt = formatDate(response.completedAt);
+        csvContent += `${username},${quizId},${score},${completedAt}\n`;
+      });
+      filename = 'quiz-responses.csv';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   const getRiskBadgeColor = (level: string) => {
     switch (level) {
       case 'low':
-        return 'bg-success text-white';
+        return 'bg-green-500 text-white';
       case 'medium':
-        return 'bg-warning text-white';
+        return 'bg-yellow-500 text-white';
       case 'high':
-        return 'bg-danger text-white';
+        return 'bg-red-500 text-white';
       default:
         return 'bg-gray-500 text-white';
     }
@@ -91,6 +119,38 @@ export default function AdminPage() {
     }
   };
 
+  const getUsernameAvatar = (username: string) => {
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'];
+    const colorIndex = username.length % colors.length;
+    const initial = username.charAt(0).toUpperCase();
+    return (
+      <div className={`w-8 h-8 rounded-full ${colors[colorIndex]} flex items-center justify-center text-white font-semibold text-sm`}>
+        {initial}
+      </div>
+    );
+  };
+
+  if (isLoading || !isAuthenticated() || !isAdmin()) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = {
+    totalResponses: testResponses.length,
+    totalQuizzes: quizResponses.length,
+    riskLevelDistribution: {
+      low: testResponses.filter((r) => r.riskLevel === 'low').length,
+      medium: testResponses.filter((r) => r.riskLevel === 'medium').length,
+      high: testResponses.filter((r) => r.riskLevel === 'high').length,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -100,20 +160,12 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold mb-2">Dashboard Admin</h1>
             <p className="text-gray-600">Kelola dan lihat hasil respon responden</p>
           </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={loadData}
-              className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition"
-            >
-              🔄 Refresh
-            </button>
-            <button
-              onClick={handleClearData}
-              className="bg-danger text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition"
-            >
-              🗑️ Hapus Data
-            </button>
-          </div>
+          <button
+            onClick={loadData}
+            className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition"
+          >
+            🔄 Refresh
+          </button>
         </div>
 
         {/* Tabs */}
@@ -154,7 +206,7 @@ export default function AdminPage() {
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-6 fade-in">
+          <div className="space-y-6">
             {/* Statistics Cards */}
             <div className="grid md:grid-cols-4 gap-6">
               <div className="bg-white rounded-lg shadow-md p-6">
@@ -166,248 +218,172 @@ export default function AdminPage() {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="text-3xl mb-2">✅</div>
                 <h3 className="text-gray-600 text-sm mb-1">Risiko Rendah</h3>
-                <p className="text-3xl font-bold text-success">{stats.riskLevelDistribution.low}</p>
+                <p className="text-3xl font-bold text-green-500">{stats.riskLevelDistribution.low}</p>
               </div>
 
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="text-3xl mb-2">⚠️</div>
                 <h3 className="text-gray-600 text-sm mb-1">Risiko Sedang</h3>
-                <p className="text-3xl font-bold text-warning">{stats.riskLevelDistribution.medium}</p>
+                <p className="text-3xl font-bold text-yellow-500">{stats.riskLevelDistribution.medium}</p>
               </div>
 
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="text-3xl mb-2">🚨</div>
                 <h3 className="text-gray-600 text-sm mb-1">Risiko Tinggi</h3>
-                <p className="text-3xl font-bold text-danger">{stats.riskLevelDistribution.high}</p>
+                <p className="text-3xl font-bold text-red-500">{stats.riskLevelDistribution.high}</p>
               </div>
             </div>
 
-            {/* Risk Distribution Chart */}
+            {/* Quick Stats */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Distribusi Tingkat Risiko</h2>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Risiko Rendah</span>
-                    <span className="text-sm font-medium">{stats.riskLevelDistribution.low}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-success h-4 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${
-                          stats.totalResponses > 0
-                            ? (stats.riskLevelDistribution.low / stats.totalResponses) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
+              <h2 className="text-xl font-semibold mb-4">Statistik Cepat</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Total Tes Risiko Diselesaikan</span>
+                  <span className="font-bold text-xl">{testResponses.length}</span>
                 </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Risiko Sedang</span>
-                    <span className="text-sm font-medium">{stats.riskLevelDistribution.medium}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-warning h-4 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${
-                          stats.totalResponses > 0
-                            ? (stats.riskLevelDistribution.medium / stats.totalResponses) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Risiko Tinggi</span>
-                    <span className="text-sm font-medium">{stats.riskLevelDistribution.high}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-danger h-4 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${
-                          stats.totalResponses > 0
-                            ? (stats.riskLevelDistribution.high / stats.totalResponses) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Total Kuis Diselesaikan</span>
+                  <span className="font-bold text-xl">{quizResponses.length}</span>
                 </div>
               </div>
-            </div>
-
-            {/* Recent Responses */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Respon Terbaru</h2>
-              {stats.recentResponses.length > 0 ? (
-                <div className="space-y-3">
-                  {stats.recentResponses.map((response, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">{response.testName}</h3>
-                        <p className="text-sm text-gray-600">{formatDate(response.completedAt)}</p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <span className="text-lg font-semibold">
-                          {response.totalScore}/{response.maxScore}
-                        </span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-semibold ${getRiskBadgeColor(
-                            response.riskLevel
-                          )}`}
-                        >
-                          {getRiskLabel(response.riskLevel)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-8">Belum ada respon</p>
-              )}
             </div>
           </div>
         )}
 
-        {/* Tests Tab */}
+        {/* Test Responses Tab */}
         {activeTab === 'tests' && (
-          <div className="bg-white rounded-lg shadow-md p-6 fade-in">
-            <h2 className="text-xl font-semibold mb-4">Semua Hasil Tes Risiko</h2>
-            {testResponses.length > 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Hasil Tes Risiko</h2>
+              <button
+                onClick={() => exportToCSV('test')}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+              >
+                📥 Export CSV
+              </button>
+            </div>
+            
+            {testResponses.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-gray-500 text-lg">Belum ada hasil tes yang tersimpan</p>
+              </div>
+            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        #
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Jenis Tes
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Skor
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Tingkat Risiko
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Tanggal
-                      </th>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-left py-3 px-4">Username</th>
+                      <th className="text-left py-3 px-4">Test Name</th>
+                      <th className="text-left py-3 px-4">Risk Level</th>
+                      <th className="text-left py-3 px-4">Score</th>
+                      <th className="text-left py-3 px-4">Completed At</th>
+                      <th className="text-center py-3 px-4">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {testResponses.map((response, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm">{index + 1}</td>
-                        <td className="py-3 px-4 text-sm font-medium">{response.testName}</td>
-                        <td className="py-3 px-4 text-sm">
-                          {response.totalScore}/{response.maxScore}
+                      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            {getUsernameAvatar(response.userId || 'N/A')}
+                            <span className="font-medium">{response.userId || 'N/A'}</span>
+                          </div>
                         </td>
-                        <td className="py-3 px-4 text-sm">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskBadgeColor(
-                              response.riskLevel
-                            )}`}
-                          >
+                        <td className="py-3 px-4">{response.testName}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getRiskBadgeColor(response.riskLevel)}`}>
                             {getRiskLabel(response.riskLevel)}
                           </span>
                         </td>
+                        <td className="py-3 px-4">
+                          {response.totalScore}/{response.maxScore}
+                        </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {formatDate(response.completedAt)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => handleDeleteTestResponse(index)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600 transition"
+                          >
+                            🗑️ Delete
+                          </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">Belum ada data tes</p>
             )}
           </div>
         )}
 
-        {/* Quizzes Tab */}
+        {/* Quiz Responses Tab */}
         {activeTab === 'quizzes' && (
-          <div className="bg-white rounded-lg shadow-md p-6 fade-in">
-            <h2 className="text-xl font-semibold mb-4">Semua Hasil Kuis</h2>
-            {quizResponses.length > 0 ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Hasil Kuis</h2>
+              <button
+                onClick={() => exportToCSV('quiz')}
+                className="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+              >
+                📥 Export CSV
+              </button>
+            </div>
+
+            {quizResponses.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-gray-500 text-lg">Belum ada hasil kuis yang tersimpan</p>
+              </div>
+            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        #
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        ID Kuis
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Skor
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Persentase
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                        Tanggal
-                      </th>
+                    <tr className="border-b-2 border-gray-200">
+                      <th className="text-left py-3 px-4">Username</th>
+                      <th className="text-left py-3 px-4">Quiz ID</th>
+                      <th className="text-left py-3 px-4">Score</th>
+                      <th className="text-left py-3 px-4">Completed At</th>
+                      <th className="text-center py-3 px-4">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {quizResponses.map((response, index) => {
-                      const percentage = Math.round((response.score / response.totalQuestions) * 100);
-                      return (
-                        <tr key={index} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 text-sm">{index + 1}</td>
-                          <td className="py-3 px-4 text-sm font-medium">{response.quizId}</td>
-                          <td className="py-3 px-4 text-sm">
+                    {quizResponses.map((response, index) => (
+                      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-3">
+                            {getUsernameAvatar(response.userId || 'N/A')}
+                            <span className="font-medium">{response.userId || 'N/A'}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">{response.quizId}</td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold">
                             {response.score}/{response.totalQuestions}
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                percentage >= 80
-                                  ? 'bg-success text-white'
-                                  : percentage >= 60
-                                  ? 'bg-primary text-white'
-                                  : 'bg-warning text-white'
-                              }`}
-                            >
-                              {percentage}%
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
-                            {formatDate(response.completedAt)}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {formatDate(response.completedAt)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => handleDeleteQuizResult(index)}
+                            className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm font-semibold hover:bg-red-600 transition"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">Belum ada data kuis</p>
             )}
           </div>
         )}
-
-        {/* Back to Home */}
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-primary hover:underline">
-            ← Kembali ke Beranda
-          </Link>
-        </div>
       </div>
     </div>
   );

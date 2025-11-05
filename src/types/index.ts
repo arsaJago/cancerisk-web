@@ -47,8 +47,8 @@ export interface QuizQuestion {
 
 export interface Quiz {
   id: string;
-  testId: string;
   title: string;
+  description: string;
   questions: QuizQuestion[];
 }
 
@@ -58,26 +58,11 @@ export interface QuizResponse {
   score: number;
   totalQuestions: number;
   completedAt: string;
+  userId?: string;
 }
 
-export interface EducationalContent {
-  id: string;
-  testId: string;
-  title: string;
-  type: 'article' | 'video';
-  content: string;
-  videoUrl?: string;
-  thumbnailUrl?: string;
-  duration?: string;
-}
-
-export interface AdminStats {
-  totalResponses: number;
-  testBreakdown: { [testId: string]: number };
-  riskLevelDistribution: {
-    low: number;
-    medium: number;
-    high: number;
-  };
-  recentResponses: TestResponse[];
+export interface User {
+  username: string;
+  fullName: string;
+  password: string;
 }
