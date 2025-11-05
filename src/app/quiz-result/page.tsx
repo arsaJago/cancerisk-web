@@ -1,10 +1,11 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getQuizByTestId } from '@/lib/data';
 
-export default function QuizResultPage() {
+function QuizResultContent() {
   const searchParams = useSearchParams();
   
   const quizId = searchParams?.get('quizId') || '';
@@ -149,5 +150,20 @@ export default function QuizResultPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuizResultPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <QuizResultContent />
+    </Suspense>
   );
 }

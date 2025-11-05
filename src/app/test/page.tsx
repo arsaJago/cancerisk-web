@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTestById } from '@/lib/data';
 import { calculateTotalScore, calculateMaxScore, saveTestResponse, getRiskCategory } from '@/lib/utils';
 import { Question } from '@/types';
 
-export default function TestPage() {
+function TestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
@@ -194,5 +194,20 @@ export default function TestPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <TestContent />
+    </Suspense>
   );
 }
